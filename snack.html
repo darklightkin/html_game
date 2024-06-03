@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇游戏</title>
+    <style>
+        canvas {
+          border: 4px solid black;
+          display: block;
+          margin: 0 auto;
+          background-color: #f0f0f0;
+        }
+        #startButton {
+          display: block;
+          margin: 10px auto;
+          padding: 10px 20px;
+          font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<button id="startButton">开始游戏</button>
+<canvas id="gameCanvas" width="600" height="600"></canvas>
+<script>
+    var canvas = document.getElementById("gameCanvas");
+    var ctx = canvas.getContext("2d");
+    var box = 20;
+    var snake = [];
+    snake[0] = { x: 9 * box, y: 10 * box };
+    var food = {
+      x: Math.floor(Math.random() * 29 + 1) * box,
+      y: Math.floor(Math.random() * 29 + 1) * box
+    };
+    var d;
+    var score = 0;
+    var gameInterval;
+
+    document.addEventListener("keydown", direction);
+
+    function direction(event) {
+      if (event.keyCode == 37 && d != "RIGHT") {
+        d = "LEFT";
+      } else if (event.keyCode == 38 && d != "DOWN") {
+        d = "UP";
+      } else if (event.keyCode == 39 && d != "LEFT") {
+        d = "RIGHT";
+      } else if (event.keyCode == 40 && d != "UP") {
+        d = "DOWN";
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, 600, 600);
+
+      for (var i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i == 0 ? "green" : "white";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      var snakeX = snake[0].x;
+      var snakeY = snake[0].y;
+
+      if (d == "LEFT") snakeX -= box;
+      if (d == "UP") snakeY -= box;
+      if (d == "RIGHT") snakeX += box;
+      if (d == "DOWN") snakeY += box;
+
+      if (snakeX == food.x && snakeY == food.y) {
+        score++;
+        food = {
+          x: Math.floor(Math.random() * 29 + 1) * box,
+          y: Math.floor(Math.random() * 29 + 1) * box
+        };
+        // 确保新食物不会生成在蛇的身体上
+        for (var i = 0; i < snake.length; i++) {
+          if (food.x == snake[i].x && food.y == snake[i].y) {
+            food = {
+              x: Math.floor(Math.random() * 29 + 1) * box,
+              y: Math.floor(Math.random() * 29 + 1) * box
+            };
+            i = -1; // 重新开始检查
+          }
+        }
+      } else {
+        snake.pop();
+      }
+
+      var newHead = {
+        x: snakeX,
+        y: snakeY
+      };
+
+      if (snakeX < 0 || snakeY < 0 || snakeX >= 30 * box || snakeY >= 30 * box || collision(newHead, snake)) {
+        clearInterval(gameInterval);
+        alert("游戏结束！您的分数是：" + score);
+        // 游戏结束后重新启用开始按钮
+        startButton. disabled = false;
+      }
+
+      snake.unshift(newHead);
+
+      ctx.fillStyle = "black";
+      ctx.font = "20px Arial";
+      ctx.fillText("分数: " + score, 10, 30);
+    }
+
+    function collision(head, array) {
+      for (var i = 0; i < array.length; i++) {
+        if (head.x == array[i].x && head.y == array[i].y) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    var startButton = document.getElementById("startButton");
+    startButton.addEventListener("click", function() {
+      gameInterval = setInterval(draw, 100);
+            // 游戏开始时禁用按钮
+      startButton. disabled = true;
+
+      // 初始化游戏
+      score = 0;
+      snake = [{ x: 9 * box, y: 10 * box }];
+      food = { x: Math.floor(Math.random() * 29 + 1) * box, y: Math.floor(Math.random() * 29 + 1) * box };
+      d = "RIGHT"; // 默认蛇向右移动
+    });
+</script>
+</body>
+</html>
